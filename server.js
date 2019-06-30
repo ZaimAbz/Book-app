@@ -53,6 +53,33 @@ app.post("/api/books", function(request, response) {
 
 app.delete("/api/books/:id", function(request, response) {
   // Make this work, too!
+  let id;
+  console.log("id", request.params.id);
+  try {
+    id = new mongodb.ObjectId(request.params.id);
+  } catch (error) {
+    console.log("error", error);
+    response.sendStatus(400);
+    return;
+  }
+
+  const client = new mongodb.MongoClient(uri);
+
+  client.connect(function() {
+    const db = client.db("literature");
+    const collection = db.collection("books");
+
+    collection.deleteOne(
+      {
+        _id: id
+      },
+      function(error, result) {
+        console.log(result);
+        response.send(error || "Deleted");
+        client.close();
+      }
+    );
+  });
 });
 
 app.put("/api/books/:id", function(request, response) {
