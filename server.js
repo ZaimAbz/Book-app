@@ -83,7 +83,32 @@ app.delete("/api/books/:id", function(request, response) {
 });
 
 app.put("/api/books/:id", function(request, response) {
-  // Also make this work!
+  const client = new mongodb.MongoClient(uri);
+
+  let id;
+  try {
+    id = new mongodb.ObjectID(request.params.id);
+  } catch (error) {
+    response.sendStatus(400);
+    return;
+  }
+  client.connect(function() {
+    const db = client.db("lieterature");
+    const collection = db.collection("books");
+
+    const searchObject = { _id: id };
+
+    collection.find(searchObject),
+      function(error, book) {
+        if (!book) {
+          response.sendStatus(404);
+        } else {
+          response.send(error || book);
+        }
+
+        client.close();
+      };
+  });
 });
 
 app.get("/api/books", function(request, response) {
